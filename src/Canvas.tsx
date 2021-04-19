@@ -19,9 +19,6 @@ export function parseMazeString(
   const lines = maze_string.split("\n");
   const mazeWidth = Math.floor(lines.length / 2);
   lines.forEach((line, i) => {
-    if (2 * mazeWidth + 1 <= i) {
-      return;
-    }
     for (let j = 0; j < line.length; j++) {
       if (i % 2 === 0) {
         if (j % 4 === 1 && line[j] === "-") {
@@ -32,7 +29,7 @@ export function parseMazeString(
           });
         }
       } else {
-        if (j > 0 && j % 4 === 0 && line[j] === "|") {
+        if (j % 4 === 0 && line[j] === "|") {
           walls.push({
             x: Math.floor(j / 4) - 1,
             y: mazeWidth - Math.floor(i / 2) - 1,
@@ -59,18 +56,8 @@ export default function Canvas(props: Props) {
 
   useEffect(() => {
     const ctx: CanvasRenderingContext2D = getContext();
-    const basicWall = () => {
-      ctx.beginPath();
-      ctx.moveTo(origin[0], origin[1]);
-      ctx.lineTo(origin[0] + mazeWidth * squareWidth, origin[1]);
-      ctx.stroke();
-
-      ctx.moveTo(origin[0], origin[1]);
-      ctx.lineTo(origin[0], origin[1] - mazeWidth * squareWidth);
-      ctx.stroke();
-      ctx.closePath();
-    };
-
+    const ref: any = canvasRef.current;
+    ctx.clearRect(0, 0, ref.width, ref.height);
     const drawWall = (pos: WallPosition) => {
       ctx.beginPath();
       if (pos.dir === "up") {
@@ -96,8 +83,6 @@ export default function Canvas(props: Props) {
       }
       ctx.closePath();
     };
-
-    basicWall();
 
     for (const wall of props.walls) {
       drawWall(wall);
