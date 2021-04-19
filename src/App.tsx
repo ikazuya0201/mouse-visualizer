@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Canvas, { WallPosition, parseMazeString } from "./Canvas";
+import fetchResult, { Result } from "./fetch";
 import { defaultInputList, defaultInput } from "./input";
 import clsx from "clsx";
 import {
@@ -9,6 +10,8 @@ import {
   createStyles,
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
+import Slider from "@material-ui/core/Slider";
+import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -98,6 +101,22 @@ export default function App() {
 
   const [walls, mazeWidth] = parseMazeString(defaultInput.maze_string);
 
+  const [value, setValue] = useState(0.0);
+  const [isPlaying, setPlaying] = useState(false);
+
+  const [result, setResult] = useState<Array<Result>>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isPlaying && result.length > 0) {
+        setValue((value) =>
+          Math.min(value + (100.0 / result.length) * 50.0, 100.0)
+        );
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  });
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -141,6 +160,20 @@ export default function App() {
           </IconButton>
         </div>
         <List>{defaultInputList}</List>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() =>
+            fetchResult(defaultInput)
+              .then((res) => {
+                setResult(res);
+                setValue(0);
+              })
+              .catch((error) => console.log(error))
+          }
+        >
+          Update
+        </Button>
       </Drawer>
       <main
         className={clsx(classes.content, {
@@ -148,7 +181,32 @@ export default function App() {
         })}
       >
         <div className={classes.drawerHeader} />
-        <Canvas walls={walls} mazeWidth={mazeWidth} />
+        <Slider
+          value={value}
+          onChange={(event, newValue) => {
+            setValue(newValue as number);
+          }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setPlaying(true)}
+        >
+          Start
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setPlaying(false)}
+        >
+          Stop
+        </Button>
+        <Canvas
+          walls={walls}
+          mazeWidth={mazeWidth}
+          results={result}
+          value={value}
+        />
       </main>
     </div>
   );

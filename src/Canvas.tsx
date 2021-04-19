@@ -1,8 +1,11 @@
 import React, { useRef, useEffect } from "react";
+import { Result } from "./fetch";
 
 interface Props {
   walls: Array<WallPosition>;
   mazeWidth: number;
+  results?: Array<Result>;
+  value: number;
 }
 
 //Left-bottom position of the maze is the origin.
@@ -51,41 +54,97 @@ export default function Canvas(props: Props) {
   };
 
   const mazeWidth = props.mazeWidth;
-  const squareWidth = 50;
-  const origin = [300, 100 + mazeWidth * squareWidth];
+  const squareWidthPixel = 50;
+  const origin = [100, 100 + mazeWidth * squareWidthPixel];
+  const squareWidthMeter = 0.09;
+  const squareRatio = squareWidthPixel / squareWidthMeter;
 
   useEffect(() => {
     const ctx: CanvasRenderingContext2D = getContext();
     const ref: any = canvasRef.current;
+
     ctx.clearRect(0, 0, ref.width, ref.height);
+
     const drawWall = (pos: WallPosition) => {
       ctx.beginPath();
       if (pos.dir === "up") {
         ctx.moveTo(
-          origin[0] + pos.x * squareWidth,
-          origin[1] - (pos.y + 1) * squareWidth
+          origin[0] + pos.x * squareWidthPixel,
+          origin[1] - (pos.y + 1) * squareWidthPixel
         );
         ctx.lineTo(
-          origin[0] + (pos.x + 1) * squareWidth,
-          origin[1] - (pos.y + 1) * squareWidth
+          origin[0] + (pos.x + 1) * squareWidthPixel,
+          origin[1] - (pos.y + 1) * squareWidthPixel
         );
         ctx.stroke();
       } else {
         ctx.moveTo(
-          origin[0] + (pos.x + 1) * squareWidth,
-          origin[1] - pos.y * squareWidth
+          origin[0] + (pos.x + 1) * squareWidthPixel,
+          origin[1] - pos.y * squareWidthPixel
         );
         ctx.lineTo(
-          origin[0] + (pos.x + 1) * squareWidth,
-          origin[1] - (pos.y + 1) * squareWidth
+          origin[0] + (pos.x + 1) * squareWidthPixel,
+          origin[1] - (pos.y + 1) * squareWidthPixel
         );
         ctx.stroke();
       }
       ctx.closePath();
     };
 
+    const drawRobot = (x: number, y: number, theta: number) => {
+      const width = 0.037;
+      const backLength = 0.024;
+      const frontLength = 0.026;
+      const leftBottom = [-width / 2.0, -backLength];
+      const rightBottom = [width / 2.0, -backLength];
+      const front = [0, frontLength];
+      const right = [width / 2.0, 0.006];
+      const left = [-width / 2.0, 0.006];
+      const cos = Math.cos(theta - Math.PI / 2.0);
+      const sin = Math.sin(theta - Math.PI / 2.0);
+      const positions = [
+        leftBottom,
+        rightBottom,
+        right,
+        front,
+        left,
+        leftBottom,
+      ];
+      const rotation = (pos: Array<number>) => {
+        return [pos[0] * cos - pos[1] * sin, pos[0] * sin + pos[1] * cos];
+      };
+      const trans = (pos: Array<number>) => {
+        const rot = rotation(pos);
+        return [x + rot[0], y + rot[1]];
+      };
+      const intoPixel = (pos: Array<number>) => {
+        return [
+          Math.floor(origin[0] + pos[0] * squareRatio),
+          Math.floor(origin[1] - pos[1] * squareRatio),
+        ];
+      };
+      ctx.beginPath();
+      for (let i = 0; i < positions.length - 1; i++) {
+        const src = intoPixel(trans(positions[i]));
+        const dst = intoPixel(trans(positions[i + 1]));
+        ctx.moveTo(src[0], src[1]);
+        ctx.lineTo(dst[0], dst[1]);
+      }
+      ctx.stroke();
+      ctx.closePath();
+    };
+
     for (const wall of props.walls) {
       drawWall(wall);
+    }
+
+    if (props.results !== undefined) {
+      const index = Math.floor((props.value * props.results.length) / 100);
+      if (index < props.results.length) {
+        const result = props.results[index];
+        const state = result.state;
+        drawRobot(state.x.x, state.y.x, state.theta.x);
+      }
     }
     ctx.save();
   });
@@ -93,8 +152,8 @@ export default function Canvas(props: Props) {
   return (
     <div>
       <canvas
-        width="2000px"
-        height="2000px"
+        width="1000px"
+        height="1000px"
         style={{
           border: "1px solid #ddd",
         }}
