@@ -20,7 +20,7 @@ module.exports = {
   plugins: ["@typescript-eslint", "prettier"],
   rules: {
     "require-jsdoc": 0,
-    "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "no-unused-vars": 0,
     "@typescript-eslint/explicit-module-boundary-types": 0,
   },
 };
