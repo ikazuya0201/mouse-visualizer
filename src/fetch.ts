@@ -18,6 +18,7 @@ export interface Result {
 export default async function fetchResult(
   input: Input
 ): Promise<Array<Result>> {
+  const mazeWidth = Math.floor(input.maze_string.split("\n").length / 2);
   const instance = axios.create({
     baseURL: "http://localhost:3030",
     headers: {
@@ -25,6 +26,6 @@ export default async function fetchResult(
     },
     responseType: "json",
   });
-  const response = await instance.post(`/simulate/16/search/`, input);
+  const response = await instance.post(`/simulate/${mazeWidth}/search/`, input);
   return response.data;
 }

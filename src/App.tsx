@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Canvas, { WallPosition, parseMazeString } from "./Canvas";
+import Canvas, { parseMazeString } from "./Canvas";
 import fetchResult, { Result } from "./fetch";
-import { defaultInputList, defaultInput } from "./input";
+import { defaultInput, inputSchema } from "./input";
+import Form from "@rjsf/material-ui";
 import clsx from "clsx";
 import {
   makeStyles,
@@ -10,19 +11,24 @@ import {
   createStyles,
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
+import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
 import Slider from "@material-ui/core/Slider";
-import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import PlayArrow from "@material-ui/icons/PlayArrow";
+import Stop from "@material-ui/icons/Stop";
+import FastForward from "@material-ui/icons/FastForward";
+import FastRewind from "@material-ui/icons/FastRewind";
+import Replay from "@material-ui/icons/Replay";
 
-const drawerWidth = 500;
+const drawerWidth = 300;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -99,18 +105,27 @@ export default function App() {
     setOpen(false);
   };
 
-  const [walls, mazeWidth] = parseMazeString(defaultInput.maze_string);
+  const [input, setInput] = useState(defaultInput);
+
+  const [walls, mazeWidth] = parseMazeString(input.maze_string);
 
   const [value, setValue] = useState(0.0);
   const [isPlaying, setPlaying] = useState(false);
 
   const [result, setResult] = useState<Array<Result>>([]);
 
+  const speeds = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0];
+
+  const [speedIndex, setSpeedIndex] = useState(3);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (isPlaying && result.length > 0) {
         setValue((value) =>
-          Math.min(value + (100.0 / result.length) * 50.0, 100.0)
+          Math.min(
+            value + (100.0 / result.length) * 50.0 * speeds[speedIndex],
+            100.0
+          )
         );
       }
     }, 50);
@@ -125,6 +140,7 @@ export default function App() {
         className={clsx(classes.appBar, {
           [classes.appBarShift]: open,
         })}
+        color="inherit"
       >
         <Toolbar>
           <IconButton
@@ -136,9 +152,59 @@ export default function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            Micromouse Simulator
-          </Typography>
+          <Container maxWidth="xs">
+            <Typography variant="h6" noWrap>
+              Micromouse Simulator
+            </Typography>
+          </Container>
+          <Container maxWidth="xl">
+            <Grid container spacing={2}>
+              <Grid item xs={10}>
+                <Slider
+                  value={value}
+                  onChange={(_event, newValue) => {
+                    setValue(newValue as number);
+                  }}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                <Typography variant="body1">× {speeds[speedIndex]}</Typography>
+              </Grid>
+            </Grid>
+          </Container>
+          <Container maxWidth="xs">
+            <IconButton
+              onClick={() => {
+                if (speedIndex > 0) {
+                  setSpeedIndex(speedIndex - 1);
+                }
+              }}
+            >
+              <FastRewind />
+            </IconButton>
+            <IconButton color="secondary" onClick={() => setPlaying(false)}>
+              <Stop />
+            </IconButton>
+            <IconButton color="primary" onClick={() => setPlaying(true)}>
+              <PlayArrow />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (speedIndex + 1 < speeds.length) {
+                  setSpeedIndex(speedIndex + 1);
+                }
+              }}
+            >
+              <FastForward />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                setValue(0);
+              }}
+            >
+              <Replay />
+            </IconButton>
+          </Container>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -159,21 +225,24 @@ export default function App() {
             )}
           </IconButton>
         </div>
-        <List>{defaultInputList}</List>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() =>
-            fetchResult(defaultInput)
+        <Form
+          schema={inputSchema}
+          formData={input}
+          uiSchema={{
+            maze_string: {
+              "ui:widget": "textarea",
+            },
+          }}
+          onSubmit={(event) => {
+            setInput(event.formData);
+            fetchResult(event.formData)
               .then((res) => {
                 setResult(res);
                 setValue(0);
               })
-              .catch((error) => console.log(error))
-          }
-        >
-          Update
-        </Button>
+              .catch((error) => console.log(error));
+          }}
+        />
       </Drawer>
       <main
         className={clsx(classes.content, {
@@ -181,26 +250,6 @@ export default function App() {
         })}
       >
         <div className={classes.drawerHeader} />
-        <Slider
-          value={value}
-          onChange={(event, newValue) => {
-            setValue(newValue as number);
-          }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setPlaying(true)}
-        >
-          Start
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => setPlaying(false)}
-        >
-          Stop
-        </Button>
         <Canvas
           walls={walls}
           mazeWidth={mazeWidth}

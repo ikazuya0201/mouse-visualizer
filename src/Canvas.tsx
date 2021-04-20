@@ -46,24 +46,27 @@ export function parseMazeString(
 }
 
 export default function Canvas(props: Props) {
-  const canvasRef = useRef(null);
-
-  const getContext = (): CanvasRenderingContext2D => {
-    const ref: any = canvasRef.current;
-    return ref.getContext("2d");
-  };
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const mazeWidth = props.mazeWidth;
   const squareWidthPixel = 50;
   const origin = [100, 100 + mazeWidth * squareWidthPixel];
   const squareWidthMeter = 0.09;
   const squareRatio = squareWidthPixel / squareWidthMeter;
+  const canvasWidth = mazeWidth * squareWidthPixel + 200;
+  const canvasHeight = mazeWidth * squareWidthPixel + 200;
 
   useEffect(() => {
-    const ctx: CanvasRenderingContext2D = getContext();
-    const ref: any = canvasRef.current;
+    const canvas = canvasRef.current;
+    if (canvas === null) {
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) {
+      return;
+    }
 
-    ctx.clearRect(0, 0, ref.width, ref.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const drawWall = (pos: WallPosition) => {
       ctx.beginPath();
@@ -152,8 +155,8 @@ export default function Canvas(props: Props) {
   return (
     <div>
       <canvas
-        width="1000px"
-        height="1000px"
+        width={canvasWidth}
+        height={canvasHeight}
         style={{
           border: "1px solid #ddd",
         }}

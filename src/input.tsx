@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useRef, Component } from "react";
+import { Field } from "@rjsf/core";
 import List from "@material-ui/core/List";
 import TextField from "@material-ui/core/TextField";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
+import { JSONSchema7 } from "json-schema";
 
 export type Direction =
   | "North"
@@ -221,55 +223,271 @@ export const defaultInput: Input = {
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+`,
 };
 
-function intoList(value: any, nestCount: number) {
-  if (typeof value === "number") {
-    return <TextField defaultValue={value} type="number" />;
-  } else if (typeof value === "string") {
-    if (value.length <= 15) {
-      return <TextField defaultValue={value} type="string" />;
-    } else {
-      return <TextareaAutosize defaultValue={value} />;
-    }
-  } else if (value instanceof Array) {
-    return (
-      <List disablePadding>
-        {value.map((elem) => intoList(elem, nestCount))}
-      </List>
-    );
-  } else {
-    const style = {
-      paddingLeft: nestCount * 10 + 10,
-    };
-    return (
-      <div>
-        <Divider />
-        <List disablePadding>
-          {Object.entries(value).map((elem) => {
-            if (typeof elem[1] === "number" || typeof elem[1] === "string") {
-              return (
-                <div>
-                  <ListItem key={elem[0]} style={style}>
-                    <ListItemText primary={elem[0]} />
-                    {intoList(elem[1], nestCount + 1)}
-                  </ListItem>
-                </div>
-              );
-            } else {
-              return (
-                <div>
-                  <ListItem key={elem[0]} style={style}>
-                    <ListItemText primary={elem[0]} />
-                  </ListItem>
-                  {intoList(elem[1], nestCount + 1)}
-                </div>
-              );
-            }
-          })}
-        </List>
-        <Divider />
-      </div>
-    );
-  }
-}
-
-export const defaultInputList = intoList(defaultInput, 0);
+export const inputSchema: JSONSchema7 = {
+  type: "object",
+  properties: {
+    config: {
+      type: "object",
+      properties: {
+        start: {
+          type: "object",
+          properties: {
+            x: {
+              type: "integer",
+            },
+            y: {
+              type: "integer",
+            },
+            direction: {
+              type: "string",
+            },
+          },
+          required: ["x", "y", "direction"],
+        },
+        return_goal: {
+          type: "object",
+          properties: {
+            x: {
+              type: "integer",
+            },
+            y: {
+              type: "integer",
+            },
+            direction: {
+              type: "string",
+            },
+          },
+          required: ["x", "y", "direction"],
+        },
+        goals: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              x: {
+                type: "integer",
+              },
+              y: {
+                type: "integer",
+              },
+              direction: {
+                type: "string",
+              },
+            },
+            required: ["x", "y", "direction"],
+          },
+        },
+        search_initial_route: {
+          type: "string",
+        },
+        search_final_route: {
+          type: "string",
+        },
+        estimator_cut_off_frequency: {
+          type: "number",
+        },
+        period: {
+          type: "number",
+        },
+        translational_kp: {
+          type: "number",
+        },
+        translational_ki: {
+          type: "number",
+        },
+        translational_kd: {
+          type: "number",
+        },
+        translational_model_gain: {
+          type: "number",
+        },
+        translational_model_time_constant: {
+          type: "number",
+        },
+        rotational_kp: {
+          type: "number",
+        },
+        rotational_ki: {
+          type: "number",
+        },
+        rotational_kd: {
+          type: "number",
+        },
+        rotational_model_gain: {
+          type: "number",
+        },
+        rotational_model_time_constant: {
+          type: "number",
+        },
+        kx: {
+          type: "number",
+        },
+        kdx: {
+          type: "number",
+        },
+        ky: {
+          type: "number",
+        },
+        kdy: {
+          type: "number",
+        },
+        valid_control_lower_bound: {
+          type: "number",
+        },
+        low_zeta: {
+          type: "number",
+        },
+        low_b: {
+          type: "number",
+        },
+        fail_safe_distance: {
+          type: "number",
+        },
+        search_velocity: {
+          type: "number",
+        },
+        max_velocity: {
+          type: "number",
+        },
+        max_acceleration: {
+          type: "number",
+        },
+        max_jerk: {
+          type: "number",
+        },
+        spin_angular_velocity: {
+          type: "number",
+        },
+        spin_angular_acceleration: {
+          type: "number",
+        },
+        spin_angular_jerk: {
+          type: "number",
+        },
+        run_slalom_velocity: {
+          type: "number",
+        },
+      },
+      required: [
+        "start",
+        "return_goal",
+        "goals",
+        "search_initial_route",
+        "search_final_route",
+        "estimator_cut_off_frequency",
+        "period",
+        "translational_kp",
+        "translational_ki",
+        "translational_kd",
+        "translational_model_gain",
+        "translational_model_time_constant",
+        "rotational_kp",
+        "rotational_ki",
+        "rotational_kd",
+        "rotational_model_gain",
+        "rotational_model_time_constant",
+        "kx",
+        "kdx",
+        "ky",
+        "kdy",
+        "valid_control_lower_bound",
+        "low_zeta",
+        "low_b",
+        "fail_safe_distance",
+        "search_velocity",
+        "max_velocity",
+        "max_acceleration",
+        "max_jerk",
+        "spin_angular_velocity",
+        "spin_angular_acceleration",
+        "spin_angular_jerk",
+        "run_slalom_velocity",
+      ],
+    },
+    state: {
+      type: "object",
+      properties: {
+        current_node: {
+          type: "object",
+          properties: {
+            x: {
+              type: "integer",
+            },
+            y: {
+              type: "integer",
+            },
+            direction: {
+              type: "string",
+            },
+          },
+          required: ["x", "y", "direction"],
+        },
+        robot_state: {
+          type: "object",
+          properties: {
+            x: {
+              type: "object",
+              properties: {
+                x: {
+                  type: "number",
+                },
+                v: {
+                  type: "integer",
+                },
+                a: {
+                  type: "integer",
+                },
+                j: {
+                  type: "integer",
+                },
+              },
+              required: ["x", "v", "a", "j"],
+            },
+            y: {
+              type: "object",
+              properties: {
+                x: {
+                  type: "number",
+                },
+                v: {
+                  type: "integer",
+                },
+                a: {
+                  type: "integer",
+                },
+                j: {
+                  type: "integer",
+                },
+              },
+              required: ["x", "v", "a", "j"],
+            },
+            theta: {
+              type: "object",
+              properties: {
+                x: {
+                  type: "number",
+                },
+                v: {
+                  type: "integer",
+                },
+                a: {
+                  type: "integer",
+                },
+                j: {
+                  type: "integer",
+                },
+              },
+              required: ["x", "v", "a", "j"],
+            },
+          },
+          required: ["x", "y", "theta"],
+        },
+      },
+      required: ["current_node", "robot_state"],
+    },
+    maze_string: {
+      type: "string",
+    },
+  },
+  required: ["config", "state", "maze_string"],
+};
