@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Canvas, { parseMazeString } from "./Canvas";
 import fetchResult, { Result } from "./fetch";
-import { defaultInput, inputSchema } from "./input";
-import Form from "@rjsf/material-ui";
+import { defaultInput, InputForm } from "./input";
 import clsx from "clsx";
 import {
   makeStyles,
@@ -225,14 +224,8 @@ export default function App() {
             )}
           </IconButton>
         </div>
-        <Form
-          schema={inputSchema}
-          formData={input}
-          uiSchema={{
-            maze_string: {
-              "ui:widget": "textarea",
-            },
-          }}
+        <InputForm
+          input={input}
           onSubmit={(event) => {
             setInput(event.formData);
             fetchResult(event.formData)

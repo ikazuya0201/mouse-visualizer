@@ -1,11 +1,6 @@
-import React, { useRef, Component } from "react";
-import { Field } from "@rjsf/core";
-import List from "@material-ui/core/List";
-import TextField from "@material-ui/core/TextField";
-import TextareaAutosize from "@material-ui/core/TextareaAutosize";
-import Divider from "@material-ui/core/Divider";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
+import React from "react";
+import { ISubmitEvent } from "@rjsf/core";
+import Form from "@rjsf/material-ui";
 import { JSONSchema7 } from "json-schema";
 
 export type Direction =
@@ -491,3 +486,23 @@ export const inputSchema: JSONSchema7 = {
   },
   required: ["config", "state", "maze_string"],
 };
+
+interface Props {
+  input: Input;
+  onSubmit: (e: ISubmitEvent<Input>) => void;
+}
+
+export function InputForm(props: Props) {
+  return (
+    <Form
+      schema={inputSchema}
+      formData={props.input}
+      uiSchema={{
+        maze_string: {
+          "ui:widget": "textarea",
+        },
+      }}
+      onSubmit={props.onSubmit}
+    />
+  );
+}
