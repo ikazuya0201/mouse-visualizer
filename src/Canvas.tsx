@@ -122,8 +122,8 @@ export default function Canvas(props: Props) {
       };
       const intoPixel = (pos: Array<number>) => {
         return [
-          Math.floor(origin[0] + pos[0] * squareRatio),
-          Math.floor(origin[1] - pos[1] * squareRatio),
+          origin[0] + pos[0] * squareRatio,
+          origin[1] - pos[1] * squareRatio,
         ];
       };
       ctx.beginPath();
