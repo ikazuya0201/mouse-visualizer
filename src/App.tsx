@@ -9,23 +9,27 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
-import Slider from "@material-ui/core/Slider";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import PlayArrow from "@material-ui/icons/PlayArrow";
-import Stop from "@material-ui/icons/Stop";
-import FastForward from "@material-ui/icons/FastForward";
-import FastRewind from "@material-ui/icons/FastRewind";
-import Replay from "@material-ui/icons/Replay";
+import {
+  Drawer,
+  Container,
+  Grid,
+  Slider,
+  CssBaseline,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+} from "@material-ui/core";
+import {
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  PlayArrow,
+  Stop,
+  FastForward,
+  FastRewind,
+  Replay,
+} from "@material-ui/icons";
 
 const drawerWidth = 300;
 
@@ -149,7 +153,7 @@ export default function App() {
             edge="start"
             className={clsx(classes.menuButton, open && classes.hide)}
           >
-            <MenuIcon />
+            <Menu />
           </IconButton>
           <Container maxWidth="xs">
             <Typography variant="h6" noWrap>
@@ -217,11 +221,7 @@ export default function App() {
       >
         <div className={classes.drawerHeader}>
           <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
+            {theme.direction === "ltr" ? <ChevronLeft /> : <ChevronRight />}
           </IconButton>
         </div>
         <InputForm
@@ -243,12 +243,16 @@ export default function App() {
         })}
       >
         <div className={classes.drawerHeader} />
-        <Canvas
-          walls={walls}
-          mazeWidth={mazeWidth}
-          results={result}
-          value={value}
-        />
+        <Grid container alignItems="center" justify="center">
+          <Grid item xs={8}>
+            <Canvas
+              walls={walls}
+              mazeWidth={mazeWidth}
+              results={result}
+              value={value}
+            />
+          </Grid>
+        </Grid>
       </main>
     </div>
   );
