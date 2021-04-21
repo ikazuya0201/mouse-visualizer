@@ -230,8 +230,8 @@ export default function App() {
         <InputForm
           input={input}
           onSubmit={(event) => {
-            setInput(event.formData);
             setLoading(true);
+            setInput(event.formData);
             fetchResult(event.formData)
               .then((res) => {
                 setResult(res);
