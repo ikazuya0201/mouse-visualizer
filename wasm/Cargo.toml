@@ -1,0 +1,36 @@
+[package]
+name = "wasm"
+version = "0.1.0"
+authors = ["Kazuya Iimuro <ikazuya0201@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+
+[dependencies]
+wasm-bindgen = "0.2.63"
+console_error_panic_hook = "0.1.6"
+wee_alloc = "0.4.5"
+serde_json = "1"
+
+[dependencies.components]
+git = "https://github.com/ikazuya0201/mouse_components"
+branch = "develop"
+
+[dependencies.mouse_simulator]
+git = "https://github.com/ikazuya0201/mouse-simulator"
+branch = "master"
+
+[dependencies.uom]
+version = "0.30.0"
+default-features = false
+features = ["f32", "autoconvert", "si"]
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+

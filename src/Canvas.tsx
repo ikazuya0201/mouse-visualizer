@@ -144,8 +144,7 @@ export default function Canvas(props: Props) {
     if (props.results !== undefined) {
       const index = Math.floor((props.value * props.results.length) / 100);
       if (index < props.results.length) {
-        const result = props.results[index];
-        const state = result.state;
+        const state = props.results[index];
         drawRobot(state.x.x, state.y.x, state.theta.x);
       }
     }
