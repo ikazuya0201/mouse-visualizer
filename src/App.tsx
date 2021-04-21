@@ -113,7 +113,7 @@ export default function App() {
 
   const [result, setResult] = useState<Array<Result>>([]);
 
-  const speeds = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0];
+  const speeds = [0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 8.0];
 
   const [speedIndex, setSpeedIndex] = useState(3);
 

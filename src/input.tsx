@@ -1,7 +1,20 @@
 import React from "react";
 import { ISubmitEvent } from "@rjsf/core";
 import Form from "@rjsf/material-ui";
+import {
+  WidgetProps,
+  ObjectFieldTemplateProps,
+  FieldTemplateProps,
+} from "@rjsf/core";
 import { JSONSchema7 } from "json-schema";
+import {
+  TextareaAutosize,
+  TextField,
+  Select,
+  MenuItem,
+} from "@material-ui/core";
+import { TreeView, TreeItem } from "@material-ui/lab";
+import { ExpandMore, ChevronRight } from "@material-ui/icons";
 
 export type Direction =
   | "North"
@@ -220,6 +233,7 @@ export const defaultInput: Input = {
 
 export const inputSchema: JSONSchema7 = {
   type: "object",
+  title: "Input",
   properties: {
     config: {
       type: "object",
@@ -487,6 +501,96 @@ export const inputSchema: JSONSchema7 = {
   required: ["config", "state", "maze_string"],
 };
 
+function CustomTextareaWidget(props: WidgetProps) {
+  return (
+    <TextareaAutosize
+      defaultValue={props.value}
+      style={{ width: "100%" }}
+      onChange={(event) => props.onChange(event.target.value)}
+    />
+  );
+}
+
+function CustomTextWidget(props: WidgetProps) {
+  return (
+    <TextField
+      defaultValue={props.value}
+      onChange={(event) => props.onChange(event.target.value)}
+    />
+  );
+}
+
+function DirectionWidget(props: WidgetProps) {
+  const item = (name: string) => {
+    return <MenuItem value={name}>{name}</MenuItem>;
+  };
+
+  return (
+    <Select
+      defaultValue={props.value}
+      onChange={(event) => props.onChange(event.target.value)}
+    >
+      {item("North")}
+      {item("NorthEast")}
+      {item("East")}
+      {item("SouthEast")}
+      {item("South")}
+      {item("SouthWest")}
+      {item("West")}
+      {item("NorthWest")}
+    </Select>
+  );
+}
+
+function FieldTemplate(props: FieldTemplateProps) {
+  return (
+    <TreeItem nodeId={props.id} label={props.label}>
+      {props.children}
+    </TreeItem>
+  );
+}
+
+function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
+  return <div>{props.properties.map((prop) => prop.content)}</div>;
+}
+
+const widgets = {
+  TextareaWidget: CustomTextareaWidget,
+  TextWidget: CustomTextWidget,
+};
+
+const uiSchema = {
+  config: {
+    start: {
+      direction: {
+        "ui:widget": DirectionWidget,
+      },
+    },
+    return_goal: {
+      direction: {
+        "ui:widget": DirectionWidget,
+      },
+    },
+    goals: {
+      items: {
+        direction: {
+          "ui:widget": DirectionWidget,
+        },
+      },
+    },
+  },
+  state: {
+    current_node: {
+      direction: {
+        "ui:widget": DirectionWidget,
+      },
+    },
+  },
+  maze_string: {
+    "ui:widget": "textarea",
+  },
+};
+
 interface Props {
   input: Input;
   onSubmit: (e: ISubmitEvent<Input>) => void;
@@ -494,15 +598,19 @@ interface Props {
 
 export function InputForm(props: Props) {
   return (
-    <Form
-      schema={inputSchema}
-      formData={props.input}
-      uiSchema={{
-        maze_string: {
-          "ui:widget": "textarea",
-        },
-      }}
-      onSubmit={props.onSubmit}
-    />
+    <TreeView
+      defaultCollapseIcon={<ExpandMore />}
+      defaultExpandIcon={<ChevronRight />}
+    >
+      <Form
+        schema={inputSchema}
+        formData={props.input}
+        uiSchema={uiSchema}
+        widgets={widgets}
+        onSubmit={props.onSubmit}
+        FieldTemplate={FieldTemplate}
+        ObjectFieldTemplate={ObjectFieldTemplate}
+      />
+    </TreeView>
   );
 }
