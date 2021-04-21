@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Canvas, { parseMazeString } from "./Canvas";
 import fetchResult, { Result } from "./fetch";
 import { defaultInput, InputForm } from "./input";
+import Loader from "react-loader";
 import clsx from "clsx";
 import {
   makeStyles,
@@ -121,6 +122,8 @@ export default function App() {
 
   const [speedIndex, setSpeedIndex] = useState(3);
 
+  const [isLoading, setLoading] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (isPlaying && result.length > 0) {
@@ -228,10 +231,12 @@ export default function App() {
           input={input}
           onSubmit={(event) => {
             setInput(event.formData);
+            setLoading(true);
             fetchResult(event.formData)
               .then((res) => {
                 setResult(res);
                 setValue(0);
+                setLoading(false);
               })
               .catch((error) => console.log(error));
           }}
@@ -245,6 +250,7 @@ export default function App() {
         <div className={classes.drawerHeader} />
         <Grid container alignItems="center" justify="center">
           <Grid item xs={8}>
+            <Loader loaded={!isLoading} zIndex={1600} />
             <Canvas
               walls={walls}
               mazeWidth={mazeWidth}
