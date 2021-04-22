@@ -136,6 +136,21 @@ export default function App() {
     return () => clearInterval(interval);
   });
 
+  useEffect(() => {
+    if (isLoading) {
+      fetchResult(input)
+        .then((res) => {
+          setResult(res);
+          setValue(0);
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false);
+          console.log(error);
+        });
+    }
+  });
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -230,13 +245,6 @@ export default function App() {
           onSubmit={(event) => {
             setLoading(true);
             setInput(event.formData);
-            fetchResult(event.formData)
-              .then((res) => {
-                setResult(res);
-                setValue(0);
-                setLoading(false);
-              })
-              .catch((error) => console.log(error));
           }}
         />
       </Drawer>
