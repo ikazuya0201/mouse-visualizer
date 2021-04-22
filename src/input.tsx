@@ -5,16 +5,23 @@ import {
   WidgetProps,
   ObjectFieldTemplateProps,
   FieldTemplateProps,
+  ArrayFieldTemplateProps,
 } from "@rjsf/core";
 import { JSONSchema7 } from "json-schema";
 import {
+  List,
+  ListItem,
+  Paper,
+  IconButton,
   TextareaAutosize,
   TextField,
   Select,
   MenuItem,
+  Grid,
+  Box,
 } from "@material-ui/core";
 import { TreeView, TreeItem } from "@material-ui/lab";
-import { ExpandMore, ChevronRight } from "@material-ui/icons";
+import { ExpandMore, ChevronRight, Add, Delete } from "@material-ui/icons";
 
 export type Direction =
   | "North"
@@ -231,6 +238,17 @@ export const defaultInput: Input = {
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+`,
 };
 
+const Directions = [
+  "North",
+  "NorthEast",
+  "East",
+  "SouthEast",
+  "South",
+  "SouthWest",
+  "West",
+  "NorthWest",
+];
+
 export const inputSchema: JSONSchema7 = {
   type: "object",
   title: "Input",
@@ -249,6 +267,7 @@ export const inputSchema: JSONSchema7 = {
             },
             direction: {
               type: "string",
+              enum: Directions,
             },
           },
           required: ["x", "y", "direction"],
@@ -264,6 +283,7 @@ export const inputSchema: JSONSchema7 = {
             },
             direction: {
               type: "string",
+              enum: Directions,
             },
           },
           required: ["x", "y", "direction"],
@@ -281,6 +301,7 @@ export const inputSchema: JSONSchema7 = {
               },
               direction: {
                 type: "string",
+                enum: Directions,
               },
             },
             required: ["x", "y", "direction"],
@@ -288,9 +309,11 @@ export const inputSchema: JSONSchema7 = {
         },
         search_initial_route: {
           type: "string",
+          enum: ["Init"],
         },
         search_final_route: {
           type: "string",
+          enum: ["Final"],
         },
         estimator_cut_off_frequency: {
           type: "number",
@@ -427,6 +450,7 @@ export const inputSchema: JSONSchema7 = {
             },
             direction: {
               type: "string",
+              enum: Directions,
             },
           },
           required: ["x", "y", "direction"],
@@ -520,24 +544,21 @@ function CustomTextWidget(props: WidgetProps) {
   );
 }
 
-function DirectionWidget(props: WidgetProps) {
-  const item = (name: string) => {
-    return <MenuItem value={name}>{name}</MenuItem>;
-  };
-
+function CustomSelectWidget(props: WidgetProps) {
   return (
     <Select
       defaultValue={props.value}
       onChange={(event) => props.onChange(event.target.value)}
     >
-      {item("North")}
-      {item("NorthEast")}
-      {item("East")}
-      {item("SouthEast")}
-      {item("South")}
-      {item("SouthWest")}
-      {item("West")}
-      {item("NorthWest")}
+      {(props.options.enumOptions as any).map(
+        ({ value, label }: any, i: number) => {
+          return (
+            <MenuItem key={i} value={value}>
+              {label}
+            </MenuItem>
+          );
+        }
+      )}
     </Select>
   );
 }
@@ -554,38 +575,38 @@ function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   return <div>{props.properties.map((prop) => prop.content)}</div>;
 }
 
+function ArrayFieldTemplate(props: ArrayFieldTemplateProps) {
+  return (
+    <div>
+      {props.items &&
+        props.items.map((p: any) => {
+          return (
+            <Grid container key={p.key} direction="row" alignItems="center">
+              <Grid item xs={8}>
+                {p.children}
+              </Grid>
+              <Grid item xs={4}>
+                <IconButton tabIndex={-1} onClick={p.onDropIndexClick(p.index)}>
+                  <Delete />
+                </IconButton>
+              </Grid>
+            </Grid>
+          );
+        })}
+      <IconButton onClick={props.onAddClick}>
+        <Add />
+      </IconButton>
+    </div>
+  );
+}
+
 const widgets = {
   TextareaWidget: CustomTextareaWidget,
   TextWidget: CustomTextWidget,
+  SelectWidget: CustomSelectWidget,
 };
 
 const uiSchema = {
-  config: {
-    start: {
-      direction: {
-        "ui:widget": DirectionWidget,
-      },
-    },
-    return_goal: {
-      direction: {
-        "ui:widget": DirectionWidget,
-      },
-    },
-    goals: {
-      items: {
-        direction: {
-          "ui:widget": DirectionWidget,
-        },
-      },
-    },
-  },
-  state: {
-    current_node: {
-      direction: {
-        "ui:widget": DirectionWidget,
-      },
-    },
-  },
   maze_string: {
     "ui:widget": "textarea",
   },
@@ -610,6 +631,7 @@ export function InputForm(props: Props) {
         onSubmit={props.onSubmit}
         FieldTemplate={FieldTemplate}
         ObjectFieldTemplate={ObjectFieldTemplate}
+        ArrayFieldTemplate={ArrayFieldTemplate}
       />
     </TreeView>
   );
