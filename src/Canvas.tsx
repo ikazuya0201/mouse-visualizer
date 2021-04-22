@@ -2,22 +2,19 @@ import React, { useRef, useEffect } from "react";
 import { Result } from "./fetch";
 
 interface Props {
-  walls: Array<WallPosition>;
-  mazeWidth: number;
   results?: Array<Result>;
   value: number;
+  mazeString: string;
 }
 
 //Left-bottom position of the maze is the origin.
-export interface WallPosition {
+interface WallPosition {
   x: number;
   y: number;
   dir: "up" | "right";
 }
 
-export function parseMazeString(
-  maze_string: string
-): [Array<WallPosition>, number] {
+function parseMazeString(maze_string: string): [Array<WallPosition>, number] {
   const walls: Array<WallPosition> = [];
   const lines = maze_string.split("\n");
   const mazeWidth = Math.floor(lines.length / 2);
@@ -48,7 +45,7 @@ export function parseMazeString(
 export default function Canvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const mazeWidth = props.mazeWidth;
+  const [walls, mazeWidth] = parseMazeString(props.mazeString);
   const squareWidthPixel = 50;
   const origin = [100, 100 + mazeWidth * squareWidthPixel];
   const squareWidthMeter = 0.09;
@@ -137,7 +134,7 @@ export default function Canvas(props: Props) {
       ctx.closePath();
     };
 
-    for (const wall of props.walls) {
+    for (const wall of walls) {
       drawWall(wall);
     }
 

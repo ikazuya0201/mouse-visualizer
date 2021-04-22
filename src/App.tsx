@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Canvas, { parseMazeString } from "./Canvas";
+import Canvas from "./Canvas";
 import fetchResult, { Result } from "./fetch";
 import { defaultInput, InputForm } from "./input";
 import Loader from "react-loader";
@@ -110,8 +110,6 @@ export default function App() {
   };
 
   const [input, setInput] = useState(defaultInput);
-
-  const [walls, mazeWidth] = parseMazeString(input.maze_string);
 
   const [value, setValue] = useState(0.0);
   const [isPlaying, setPlaying] = useState(false);
@@ -252,8 +250,7 @@ export default function App() {
           <Grid item xs={8}>
             <Loader loaded={!isLoading} zIndex={1600} />
             <Canvas
-              walls={walls}
-              mazeWidth={mazeWidth}
+              mazeString={input.maze_string}
               results={result}
               value={value}
             />
