@@ -145,6 +145,43 @@ export default function Canvas(props: Props) {
         drawRobot(state.x.x, state.y.x, state.theta.x);
       }
     }
+
+    for (let i = 0; i < 2 * mazeWidth; i++) {
+      const halfSquareWidthPixel = squareWidthPixel / 2;
+      const margin = 5;
+
+      // lower
+      ctx.fillText(
+        i.toString(),
+        origin[0] + (i + 1) * halfSquareWidthPixel - margin,
+        origin[1] + halfSquareWidthPixel
+      );
+
+      // upper
+      ctx.fillText(
+        i.toString(),
+        origin[0] + (i + 1) * halfSquareWidthPixel - margin,
+        origin[1] - squareWidthPixel * mazeWidth - halfSquareWidthPixel + margin
+      );
+
+      // left
+      ctx.fillText(
+        i.toString(),
+        origin[0] - halfSquareWidthPixel,
+        origin[1] - (i + 1) * halfSquareWidthPixel + margin
+      );
+
+      // right
+      ctx.fillText(
+        i.toString(),
+        origin[0] +
+          squareWidthPixel * mazeWidth +
+          halfSquareWidthPixel -
+          margin,
+        origin[1] - (i + 1) * halfSquareWidthPixel + margin
+      );
+    }
+
     ctx.save();
   });
 
