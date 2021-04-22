@@ -259,6 +259,12 @@ export default function App() {
             <Loader loaded={!isLoading} zIndex={1600} />
             <Canvas
               mazeString={input.maze_string}
+              setMazeString={(newMazeString) => {
+                setInput({
+                  ...input,
+                  maze_string: newMazeString,
+                });
+              }}
               results={result}
               value={value}
             />

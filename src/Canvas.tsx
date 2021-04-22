@@ -5,6 +5,7 @@ interface Props {
   results?: Array<Result>;
   value: number;
   mazeString: string;
+  setMazeString: (mazeString: string) => void;
 }
 
 //Left-bottom position of the maze is the origin.
@@ -14,32 +15,87 @@ interface WallPosition {
   dir: "up" | "right";
 }
 
-function parseMazeString(maze_string: string): [Array<WallPosition>, number] {
-  const walls: Array<WallPosition> = [];
+function parseMazeString(maze_string: string): [Set<string>, number] {
+  const walls = new Set<string>();
   const lines = maze_string.split("\n");
   const mazeWidth = Math.floor(lines.length / 2);
   lines.forEach((line, i) => {
     for (let j = 0; j < line.length; j++) {
       if (i % 2 === 0) {
         if (j % 4 === 1 && line[j] === "-") {
-          walls.push({
-            x: Math.floor(j / 4),
-            y: mazeWidth - Math.floor(i / 2) - 1,
-            dir: "up",
-          });
+          walls.add(
+            JSON.stringify({
+              x: Math.floor(j / 4),
+              y: mazeWidth - Math.floor(i / 2) - 1,
+              dir: "up",
+            })
+          );
         }
       } else {
         if (j % 4 === 0 && line[j] === "|") {
-          walls.push({
-            x: Math.floor(j / 4) - 1,
-            y: mazeWidth - Math.floor(i / 2) - 1,
-            dir: "right",
-          });
+          walls.add(
+            JSON.stringify({
+              x: Math.floor(j / 4) - 1,
+              y: mazeWidth - Math.floor(i / 2) - 1,
+              dir: "right",
+            })
+          );
         }
       }
     }
   });
   return [walls, mazeWidth];
+}
+
+function intoMazeString(walls: Set<string>, mazeWidth: number): string {
+  const hasWall: Array<Array<{ right: boolean; up: boolean }>> = [];
+  for (let x = 0; x < mazeWidth; x++) {
+    hasWall.push([]);
+    for (let y = 0; y < mazeWidth; y++) {
+      hasWall[x].push({ up: false, right: false });
+    }
+  }
+  walls.forEach((wallStr) => {
+    const wall: WallPosition = JSON.parse(wallStr);
+    if (
+      wall.x < 0 ||
+      wall.y < 0 ||
+      wall.x >= mazeWidth ||
+      wall.y >= mazeWidth
+    ) {
+      return;
+    }
+    if (wall.dir === "up") {
+      hasWall[wall.x][wall.y].up = true;
+    } else {
+      hasWall[wall.x][wall.y].right = true;
+    }
+  });
+
+  let res = "";
+  for (let y = 0; y < mazeWidth; y++) {
+    for (let x = 0; x < mazeWidth; x++) {
+      if (hasWall[x][mazeWidth - y - 1].up) {
+        res += "+---";
+      } else {
+        res += "+   ";
+      }
+    }
+    res += "+\n|";
+    for (let x = 0; x < mazeWidth; x++) {
+      if (hasWall[x][mazeWidth - y - 1].right) {
+        res += "   |";
+      } else {
+        res += "    ";
+      }
+    }
+    res += "\n";
+  }
+  for (let x = 0; x < mazeWidth; x++) {
+    res += "+---";
+  }
+  res += "+";
+  return res;
 }
 
 export default function Canvas(props: Props) {
@@ -134,9 +190,7 @@ export default function Canvas(props: Props) {
       ctx.closePath();
     };
 
-    for (const wall of walls) {
-      drawWall(wall);
-    }
+    walls.forEach((wall) => drawWall(JSON.parse(wall)));
 
     if (props.results !== undefined) {
       const index = Math.floor((props.value * props.results.length) / 100);
@@ -185,6 +239,78 @@ export default function Canvas(props: Props) {
     ctx.save();
   });
 
+  const onClick = (event: any) => {
+    const rect = event.target.getBoundingClientRect();
+    const x = event.clientX - rect.left - origin[0];
+    const y = origin[1] - (event.clientY - rect.top);
+    const xquo = Math.floor(x / squareWidthPixel);
+    const yquo = Math.floor(y / squareWidthPixel);
+    const xrem = x % squareWidthPixel;
+    const yrem = y % squareWidthPixel;
+    const cands = [
+      [xrem, "left"],
+      [squareWidthPixel - xrem, "right"],
+      [yrem, "bottom"],
+      [squareWidthPixel - yrem, "top"],
+    ];
+    cands.sort((a, b) => {
+      if (a[0] < b[0]) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    const dir = cands[0][1];
+    const wall = ((): WallPosition | undefined => {
+      switch (dir) {
+        case "right":
+          return {
+            x: xquo,
+            y: yquo,
+            dir: "right",
+          };
+        case "top":
+          return {
+            x: xquo,
+            y: yquo,
+            dir: "up",
+          };
+        case "left":
+          if (xquo === 0) {
+            return undefined;
+          } else {
+            return {
+              x: xquo - 1,
+              y: yquo,
+              dir: "right",
+            };
+          }
+        case "bottom":
+          if (yquo == 0) {
+            return undefined;
+          } else {
+            return {
+              x: xquo,
+              y: yquo - 1,
+              dir: "up",
+            };
+          }
+        default:
+          return undefined;
+      }
+    })();
+    if (wall === undefined) {
+      return;
+    }
+    const wallStr = JSON.stringify(wall);
+    if (walls.has(wallStr)) {
+      walls.delete(wallStr);
+    } else {
+      walls.add(wallStr);
+    }
+    props.setMazeString(intoMazeString(walls, mazeWidth));
+  };
+
   return (
     <div>
       <canvas
@@ -195,6 +321,7 @@ export default function Canvas(props: Props) {
         }}
         className="canvas"
         ref={canvasRef}
+        onClick={onClick}
       />
     </div>
   );
