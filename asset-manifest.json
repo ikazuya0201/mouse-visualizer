@@ -3,13 +3,13 @@
     "main.css": "/mouse-visualizer/static/css/main.6dea0f05.chunk.css",
     "main.js": "/mouse-visualizer/static/js/main.47ee261f.chunk.js",
     "main.js.map": "/mouse-visualizer/static/js/main.47ee261f.chunk.js.map",
-    "runtime-main.js": "/mouse-visualizer/static/js/runtime-main.273b618f.js",
-    "runtime-main.js.map": "/mouse-visualizer/static/js/runtime-main.273b618f.js.map",
+    "runtime-main.js": "/mouse-visualizer/static/js/runtime-main.206319e0.js",
+    "runtime-main.js.map": "/mouse-visualizer/static/js/runtime-main.206319e0.js.map",
     "static/js/2.60e597c9.chunk.js": "/mouse-visualizer/static/js/2.60e597c9.chunk.js",
     "static/js/2.60e597c9.chunk.js.map": "/mouse-visualizer/static/js/2.60e597c9.chunk.js.map",
-    "static/js/3.2584921f.chunk.js": "/mouse-visualizer/static/js/3.2584921f.chunk.js",
-    "cbb1ccdbc1b9222ee04a.module.wasm": "/mouse-visualizer/cbb1ccdbc1b9222ee04a.module.wasm",
-    "static/js/3.2584921f.chunk.js.map": "/mouse-visualizer/static/js/3.2584921f.chunk.js.map",
+    "static/js/3.7c26079b.chunk.js": "/mouse-visualizer/static/js/3.7c26079b.chunk.js",
+    "d5e2026a541cbd7e890e.module.wasm": "/mouse-visualizer/d5e2026a541cbd7e890e.module.wasm",
+    "static/js/3.7c26079b.chunk.js.map": "/mouse-visualizer/static/js/3.7c26079b.chunk.js.map",
     "static/js/4.701384d9.chunk.js": "/mouse-visualizer/static/js/4.701384d9.chunk.js",
     "static/js/4.701384d9.chunk.js.map": "/mouse-visualizer/static/js/4.701384d9.chunk.js.map",
     "index.html": "/mouse-visualizer/index.html",
@@ -17,7 +17,7 @@
     "static/js/2.60e597c9.chunk.js.LICENSE.txt": "/mouse-visualizer/static/js/2.60e597c9.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.273b618f.js",
+    "static/js/runtime-main.206319e0.js",
     "static/js/2.60e597c9.chunk.js",
     "static/css/main.6dea0f05.chunk.css",
     "static/js/main.47ee261f.chunk.js"
