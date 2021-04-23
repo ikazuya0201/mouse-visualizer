@@ -2,9 +2,14 @@ use std::rc::Rc;
 
 use components::defaults::{config::Config, state::State};
 use components::{
+    administrator::OperatorError,
     defaults::{
-        alias::SearchOperator, config::ConfigContainer, resource::ResourceBuilder,
-        state::StateContainer,
+        alias::{
+            ReturnOperator, ReturnSetupOperator, RunOperator, RunSetupOperator, SearchOperator,
+        },
+        config::ConfigContainer,
+        resource::ResourceBuilder,
+        state::{StateBuilder, StateContainer},
     },
     prelude::*,
     traits::Operator,
@@ -12,6 +17,7 @@ use components::{
     utils::math::LibmMath,
     utils::probability::Probability,
     wall_manager::WallManager,
+    Construct, Deconstruct,
 };
 use mouse_simulator::{
     AgentSimulator, DistanceSensorMock, EncoderMock, ImuMock, MotorMock, Observer, Stepper,
@@ -81,20 +87,134 @@ pub struct Input {
     pub maze_string: String,
 }
 
+enum Operators {
+    Blank,
+    SearchOperator(
+        SearchOperator<
+            EncoderMock,
+            EncoderMock,
+            ImuMock,
+            MotorMock,
+            MotorMock,
+            DistanceSensorMock<N>,
+            LibmMath,
+            N,
+        >,
+    ),
+    ReturnSetupOperator(
+        ReturnSetupOperator<
+            EncoderMock,
+            EncoderMock,
+            ImuMock,
+            MotorMock,
+            MotorMock,
+            DistanceSensorMock<N>,
+            LibmMath,
+            N,
+        >,
+    ),
+    ReturnOperator(
+        ReturnOperator<
+            EncoderMock,
+            EncoderMock,
+            ImuMock,
+            MotorMock,
+            MotorMock,
+            DistanceSensorMock<N>,
+            LibmMath,
+            N,
+        >,
+    ),
+    RunSetupOperator(
+        RunSetupOperator<
+            EncoderMock,
+            EncoderMock,
+            ImuMock,
+            MotorMock,
+            MotorMock,
+            DistanceSensorMock<N>,
+            LibmMath,
+            N,
+        >,
+    ),
+    RunOperator(
+        RunOperator<
+            EncoderMock,
+            EncoderMock,
+            ImuMock,
+            MotorMock,
+            MotorMock,
+            DistanceSensorMock<N>,
+            LibmMath,
+            N,
+        >,
+    ),
+}
+
+impl Operator for Operators {
+    type Error = core::convert::Infallible;
+
+    fn run(&self) -> Result<(), OperatorError<Self::Error>> {
+        fn convert_err<T: core::fmt::Debug>(
+            err: OperatorError<T>,
+        ) -> OperatorError<core::convert::Infallible> {
+            match err {
+                OperatorError::Other(err) => unimplemented!("{:?}", err),
+                OperatorError::Incompleted => OperatorError::Incompleted,
+            }
+        }
+
+        match self {
+            Operators::Blank => {
+                unreachable!("Operators::run should never be called when it is None")
+            }
+            Operators::SearchOperator(inner) => inner.run().map_err(|err| convert_err(err)),
+            Operators::ReturnOperator(inner) => inner.run().map_err(|err| convert_err(err)),
+            Operators::ReturnSetupOperator(inner) => inner.run().map_err(|err| convert_err(err)),
+            Operators::RunOperator(inner) => inner.run().map_err(|err| convert_err(err)),
+            Operators::RunSetupOperator(inner) => inner.run().map_err(|err| convert_err(err)),
+        }
+    }
+
+    fn tick(&self) -> Result<(), Self::Error> {
+        match self {
+            Operators::Blank => {
+                unreachable!("Operators::tick should never be called when it is None")
+            }
+            Operators::SearchOperator(inner) => {
+                inner.tick().map_err(|err| unreachable!("{:?}", err))
+            }
+            Operators::ReturnOperator(inner) => {
+                inner.tick().map_err(|err| unreachable!("{:?}", err))
+            }
+            Operators::ReturnSetupOperator(inner) => {
+                inner.tick().map_err(|err| unreachable!("{:?}", err))
+            }
+            Operators::RunOperator(inner) => inner.tick().map_err(|err| unreachable!("{:?}", err)),
+            Operators::RunSetupOperator(inner) => {
+                inner.tick().map_err(|err| unreachable!("{:?}", err))
+            }
+        }
+    }
+}
+
+type Resource = components::defaults::resource::Resource<
+    EncoderMock,
+    EncoderMock,
+    ImuMock,
+    MotorMock,
+    MotorMock,
+    DistanceSensorMock<N>,
+    N,
+>;
+
 #[wasm_bindgen]
 pub struct Simulator {
-    search_operator: SearchOperator<
-        EncoderMock,
-        EncoderMock,
-        ImuMock,
-        MotorMock,
-        MotorMock,
-        DistanceSensorMock<N>,
-        LibmMath,
-        N,
-    >,
+    operator: Operators,
     stepper: Stepper,
     observer: Observer,
+    config: ConfigContainer<N>,
+    resource: Option<Resource>,
 }
 
 #[wasm_bindgen]
@@ -171,23 +291,57 @@ impl Simulator {
 
         let config: ConfigContainer<N> = input.config.into();
         let state: StateContainer<N> = input.state.into();
+        let (operator, resource) = SearchOperator::construct(&config, &state, resource);
         Self {
-            search_operator: SearchOperator::construct(&config, &state, resource).0,
+            operator: Operators::SearchOperator(operator),
             stepper,
             observer,
+            config,
+            resource: Some(resource),
         }
+    }
+
+    fn convert<T, U>(&mut self, operator: T) -> U
+    where
+        T: Deconstruct<StateBuilder<N>, Resource>,
+        U: Construct<ConfigContainer<N>, StateContainer<N>, Resource>,
+    {
+        let (mut state, mut resource) = operator.deconstruct();
+        resource = resource.merge(self.resource.take().expect("Should never be None"));
+        let state: StateContainer<N> = state.build().expect("Should never panic").into();
+        let (operator, resource) = U::construct(&self.config, &state, resource);
+        self.resource = Some(resource);
+        operator
     }
 
     pub fn simulate_one_step(&mut self) -> Result<String, JsValue> {
         console_error_panic_hook::set_once();
 
-        if self.search_operator.run().is_ok() {
-            return Err(JsValue::from_str("search_finish"));
+        while self.operator.run().is_ok() {
+            let mut tmp = Operators::Blank;
+            core::mem::swap(&mut tmp, &mut self.operator);
+            let mut next = match tmp {
+                Operators::SearchOperator(inner) => {
+                    Operators::ReturnSetupOperator(self.convert(inner))
+                }
+                Operators::ReturnSetupOperator(inner) => {
+                    Operators::ReturnOperator(self.convert(inner))
+                }
+                Operators::ReturnOperator(inner) => {
+                    Operators::RunSetupOperator(self.convert(inner))
+                }
+                Operators::RunSetupOperator(inner) => Operators::RunOperator(self.convert(inner)),
+                Operators::RunOperator(_) => {
+                    return Err(JsValue::from_str("entire process finished"))
+                }
+                _ => unreachable!("Operators should never be Blank here"),
+            };
+            core::mem::swap(&mut next, &mut self.operator);
         }
-        self.search_operator
+        self.stepper.step();
+        self.operator
             .tick()
             .map_err(|err| JsValue::from_str(&format!("{:?}", err)))?;
-        self.stepper.step();
         serde_json::to_string(&self.observer.state())
             .map_err(|err| JsValue::from_str(&format!("{:?}", err)))
     }
