@@ -167,7 +167,7 @@ export const defaultInput: Input = {
     low_zeta: 1.0,
     low_b: 1e-3,
     fail_safe_distance: 0.05,
-    search_velocity: 0.12,
+    search_velocity: 0.3,
     max_velocity: 1.0,
     max_acceleration: 50.0,
     max_jerk: 100.0,
