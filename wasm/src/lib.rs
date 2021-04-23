@@ -13,7 +13,9 @@ use components::{
     utils::probability::Probability,
     wall_manager::WallManager,
 };
-use mouse_simulator::AgentSimulator;
+use mouse_simulator::{
+    AgentSimulator, DistanceSensorMock, EncoderMock, ImuMock, MotorMock, Observer, Stepper,
+};
 use serde::{Deserialize, Serialize};
 use uom::si::{
     angle::degree,
@@ -80,84 +82,113 @@ pub struct Input {
 }
 
 #[wasm_bindgen]
-pub fn simulate(input: &str) -> String {
-    console_error_panic_hook::set_once();
+pub struct Simulator {
+    search_operator: SearchOperator<
+        EncoderMock,
+        EncoderMock,
+        ImuMock,
+        MotorMock,
+        MotorMock,
+        DistanceSensorMock<N>,
+        LibmMath,
+        N,
+    >,
+    stepper: Stepper,
+    observer: Observer,
+}
 
-    let input: Input = serde_json::from_str(input).unwrap();
+#[wasm_bindgen]
+impl Simulator {
+    pub fn new(input: &str) -> Self {
+        console_error_panic_hook::set_once();
 
-    let maze_string = shape_maze_string(&input.maze_string);
+        let input: Input = serde_json::from_str(input).unwrap();
 
-    let existence_threshold = Probability::new(0.1).unwrap();
+        let maze_string = shape_maze_string(&input.maze_string);
 
-    let distance_sensors_poses = vec![
-        Pose {
-            x: Length::new::<millimeter>(0.0),
-            y: Length::new::<millimeter>(23.0),
-            theta: Angle::new::<degree>(0.0),
-        },
-        Pose {
-            x: Length::new::<millimeter>(-11.5),
-            y: Length::new::<millimeter>(13.0),
-            theta: Angle::new::<degree>(90.0),
-        },
-        Pose {
-            x: Length::new::<millimeter>(11.5),
-            y: Length::new::<millimeter>(13.0),
-            theta: Angle::new::<degree>(-90.0),
-        },
-    ];
+        let existence_threshold = Probability::new(0.1).unwrap();
 
-    let wheel_interval = Length::new::<millimeter>(33.5);
+        let distance_sensors_poses = vec![
+            Pose {
+                x: Length::new::<millimeter>(0.0),
+                y: Length::new::<millimeter>(23.0),
+                theta: Angle::new::<degree>(0.0),
+            },
+            Pose {
+                x: Length::new::<millimeter>(-11.5),
+                y: Length::new::<millimeter>(13.0),
+                theta: Angle::new::<degree>(90.0),
+            },
+            Pose {
+                x: Length::new::<millimeter>(11.5),
+                y: Length::new::<millimeter>(13.0),
+                theta: Angle::new::<degree>(-90.0),
+            },
+        ];
 
-    let simulator = AgentSimulator::new(
-        input.state.robot_state().clone(),
-        *input.config.period(),
-        *input.config.translational_model_gain(),
-        *input.config.translational_model_time_constant(),
-        *input.config.rotational_model_gain(),
-        *input.config.rotational_model_time_constant(),
-        WallManager::<N>::with_str(existence_threshold, &maze_string),
-        distance_sensors_poses,
-    );
+        let wheel_interval = Length::new::<millimeter>(33.5);
 
-    let (
-        stepper,
-        observer,
-        right_encoder,
-        left_encoder,
-        imu,
-        right_motor,
-        left_motor,
-        distance_sensors,
-    ) = simulator.split(
-        wheel_interval,
-        ElectricPotential::new::<volt>(3.7),
-        *input.config.square_width(),
-        *input.config.wall_width(),
-        *input.config.ignore_radius_from_pillar(),
-        *input.config.ignore_length_from_wall(),
-    );
+        let simulator = AgentSimulator::new(
+            input.state.robot_state().clone(),
+            *input.config.period(),
+            *input.config.translational_model_gain(),
+            *input.config.translational_model_time_constant(),
+            *input.config.rotational_model_gain(),
+            *input.config.rotational_model_time_constant(),
+            WallManager::<N>::with_str(existence_threshold, &maze_string),
+            distance_sensors_poses,
+        );
 
-    let wall_manager = Rc::new(WallManager::new(existence_threshold));
-    let resource = ResourceBuilder::new()
-        .left_encoder(left_encoder)
-        .right_encoder(right_encoder)
-        .imu(imu)
-        .left_motor(left_motor)
-        .right_motor(right_motor)
-        .wall_manager(wall_manager)
-        .distance_sensors(distance_sensors.into_iter().collect())
-        .build()
-        .unwrap();
+        let (
+            stepper,
+            observer,
+            right_encoder,
+            left_encoder,
+            imu,
+            right_motor,
+            left_motor,
+            distance_sensors,
+        ) = simulator.split(
+            wheel_interval,
+            ElectricPotential::new::<volt>(3.7),
+            *input.config.square_width(),
+            *input.config.wall_width(),
+            *input.config.ignore_radius_from_pillar(),
+            *input.config.ignore_length_from_wall(),
+        );
 
-    let config: ConfigContainer<N> = input.config.into();
-    let state: StateContainer<N> = input.state.into();
-    let (operator, _) =
-        SearchOperator::<_, _, _, _, _, _, LibmMath, N>::construct(&config, &state, resource);
-    let mut log = Vec::new();
-    while operator.run().is_err() && !operator.tick().is_err() {
-        log.push(observer.state().clone());
-        stepper.step();
+        let wall_manager = Rc::new(WallManager::new(existence_threshold));
+        let resource = ResourceBuilder::new()
+            .left_encoder(left_encoder)
+            .right_encoder(right_encoder)
+            .imu(imu)
+            .left_motor(left_motor)
+            .right_motor(right_motor)
+            .wall_manager(wall_manager)
+            .distance_sensors(distance_sensors.into_iter().collect())
+            .build()
+            .unwrap();
+
+        let config: ConfigContainer<N> = input.config.into();
+        let state: StateContainer<N> = input.state.into();
+        Self {
+            search_operator: SearchOperator::construct(&config, &state, resource).0,
+            stepper,
+            observer,
+        }
     }
-    serde_json::to_string(&log).unwrap()
+
+    pub fn simulate_one_step(&mut self) -> Result<String, JsValue> {
+        console_error_panic_hook::set_once();
+
+        if self.search_operator.run().is_ok() {
+            return Err(JsValue::from_str("search_finish"));
+        }
+        self.search_operator
+            .tick()
+            .map_err(|err| JsValue::from_str(&format!("{:?}", err)))?;
+        self.stepper.step();
+        serde_json::to_string(&self.observer.state())
+            .map_err(|err| JsValue::from_str(&format!("{:?}", err)))
+    }
 }

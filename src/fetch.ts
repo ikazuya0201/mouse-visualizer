@@ -16,5 +16,30 @@ export default async function fetchResult(
   input: Input
 ): Promise<Array<Result>> {
   const wasm = await import("wasm");
-  return JSON.parse(wasm.simulate(JSON.stringify(input)));
+  const simulator = wasm.Simulator.new(JSON.stringify(input));
+  let results: Array<Result> = [];
+  for (;;) {
+    try {
+      const batchResults: Array<Result> = await new Promise(
+        (resolve, rejected) => {
+          setTimeout(() => {
+            const batchResults: Array<Result> = [];
+            try {
+              for (let i = 0; i < 300; i++) {
+                batchResults.push(JSON.parse(simulator.simulate_one_step()));
+              }
+            } catch (err) {
+              rejected(err);
+            }
+            resolve(batchResults);
+          });
+        }
+      );
+      results = results.concat(batchResults);
+    } catch (err) {
+      console.log(err);
+      break;
+    }
+  }
+  return results;
 }
