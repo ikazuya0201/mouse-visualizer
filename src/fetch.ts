@@ -20,22 +20,21 @@ export default async function fetchResult(
   let results: Array<Result> = [];
   for (;;) {
     try {
-      const batchResults: Array<Result> = await new Promise(
-        (resolve, rejected) => {
-          setTimeout(() => {
-            const batchResults: Array<Result> = [];
-            try {
-              for (let i = 0; i < 300; i++) {
-                batchResults.push(JSON.parse(simulator.simulate_one_step()));
-              }
-            } catch (err) {
-              rejected(err);
+      await new Promise<void>((resolve, rejected) => {
+        setTimeout(() => {
+          const batchResults: Array<Result> = [];
+          try {
+            for (let i = 0; i < 300; i++) {
+              batchResults.push(JSON.parse(simulator.simulate_one_step()));
             }
-            resolve(batchResults);
-          });
-        }
-      );
-      results = results.concat(batchResults);
+            results = results.concat(batchResults);
+          } catch (err) {
+            results = results.concat(batchResults);
+            rejected(err);
+          }
+          resolve();
+        });
+      });
     } catch (err) {
       console.log(err);
       break;
