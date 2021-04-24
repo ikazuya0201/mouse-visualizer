@@ -63,7 +63,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "components"
 version = "0.1.0"
-source = "git+https://github.com/ikazuya0201/mouse_components?branch=develop#2869abbc99976fde45112ff60b20536982603ff7"
+source = "git+https://github.com/ikazuya0201/mouse_components?branch=develop#d23d79fa8520a027404252d9ecc435e9480210bd"
 dependencies = [
  "heapless",
  "libm",
