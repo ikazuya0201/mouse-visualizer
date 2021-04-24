@@ -230,6 +230,7 @@ export default function App() {
           onSubmit={(event) => {
             setLoading(true);
             setInput(event.formData);
+            setPlaying(false);
             fetchResult(event.formData)
               .then((res) => {
                 setResult(res);
