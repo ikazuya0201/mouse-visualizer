@@ -28,6 +28,9 @@ export default async function fetchResult(
               batchResults.push(JSON.parse(simulator.simulate_one_step()));
             }
             results = results.concat(batchResults);
+            if (results.length > input.time_limit) {
+              rejected("time limit exceeded");
+            }
           } catch (err) {
             results = results.concat(batchResults);
             rejected(err);

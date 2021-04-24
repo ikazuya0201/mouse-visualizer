@@ -9,16 +9,12 @@ import {
 } from "@rjsf/core";
 import { JSONSchema7 } from "json-schema";
 import {
-  List,
-  ListItem,
-  Paper,
   IconButton,
   TextareaAutosize,
   TextField,
   Select,
   MenuItem,
   Grid,
-  Box,
 } from "@material-ui/core";
 import { TreeView, TreeItem } from "@material-ui/lab";
 import { ExpandMore, ChevronRight, Add, Delete } from "@material-ui/icons";
@@ -109,6 +105,7 @@ export interface Input {
     };
   };
   maze_string: string;
+  time_limit: number;
 }
 
 export const defaultInput: Input = {
@@ -236,6 +233,7 @@ export const defaultInput: Input = {
 +   +   +   +---+   +---+   +---+---+   +---+   +---+   +---+   +
 |   |   |                                       |   |           |
 +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+`,
+  time_limit: 300000,
 };
 
 const Directions = [
@@ -521,8 +519,11 @@ export const inputSchema: JSONSchema7 = {
     maze_string: {
       type: "string",
     },
+    time_limit: {
+      type: "integer",
+    },
   },
-  required: ["config", "state", "maze_string"],
+  required: ["config", "state", "maze_string", "time_limit"],
 };
 
 function CustomTextareaWidget(props: WidgetProps) {
