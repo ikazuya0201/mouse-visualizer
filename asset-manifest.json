@@ -1,25 +1,25 @@
 {
   "files": {
     "main.css": "/mouse-visualizer/static/css/main.6dea0f05.chunk.css",
-    "main.js": "/mouse-visualizer/static/js/main.0e33ca55.chunk.js",
-    "main.js.map": "/mouse-visualizer/static/js/main.0e33ca55.chunk.js.map",
-    "runtime-main.js": "/mouse-visualizer/static/js/runtime-main.460d8623.js",
-    "runtime-main.js.map": "/mouse-visualizer/static/js/runtime-main.460d8623.js.map",
-    "static/js/2.60e597c9.chunk.js": "/mouse-visualizer/static/js/2.60e597c9.chunk.js",
-    "static/js/2.60e597c9.chunk.js.map": "/mouse-visualizer/static/js/2.60e597c9.chunk.js.map",
-    "static/js/3.4f26a6a9.chunk.js": "/mouse-visualizer/static/js/3.4f26a6a9.chunk.js",
-    "2d76e690f7d3be842a6b.module.wasm": "/mouse-visualizer/2d76e690f7d3be842a6b.module.wasm",
-    "static/js/3.4f26a6a9.chunk.js.map": "/mouse-visualizer/static/js/3.4f26a6a9.chunk.js.map",
+    "main.js": "/mouse-visualizer/static/js/main.8448be29.chunk.js",
+    "main.js.map": "/mouse-visualizer/static/js/main.8448be29.chunk.js.map",
+    "runtime-main.js": "/mouse-visualizer/static/js/runtime-main.6ac026be.js",
+    "runtime-main.js.map": "/mouse-visualizer/static/js/runtime-main.6ac026be.js.map",
+    "static/js/2.73ecceb8.chunk.js": "/mouse-visualizer/static/js/2.73ecceb8.chunk.js",
+    "static/js/2.73ecceb8.chunk.js.map": "/mouse-visualizer/static/js/2.73ecceb8.chunk.js.map",
+    "static/js/3.1c684d77.chunk.js": "/mouse-visualizer/static/js/3.1c684d77.chunk.js",
+    "6f5a2b8bb50403422f58.module.wasm": "/mouse-visualizer/6f5a2b8bb50403422f58.module.wasm",
+    "static/js/3.1c684d77.chunk.js.map": "/mouse-visualizer/static/js/3.1c684d77.chunk.js.map",
     "static/js/4.701384d9.chunk.js": "/mouse-visualizer/static/js/4.701384d9.chunk.js",
     "static/js/4.701384d9.chunk.js.map": "/mouse-visualizer/static/js/4.701384d9.chunk.js.map",
     "index.html": "/mouse-visualizer/index.html",
     "static/css/main.6dea0f05.chunk.css.map": "/mouse-visualizer/static/css/main.6dea0f05.chunk.css.map",
-    "static/js/2.60e597c9.chunk.js.LICENSE.txt": "/mouse-visualizer/static/js/2.60e597c9.chunk.js.LICENSE.txt"
+    "static/js/2.73ecceb8.chunk.js.LICENSE.txt": "/mouse-visualizer/static/js/2.73ecceb8.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.460d8623.js",
-    "static/js/2.60e597c9.chunk.js",
+    "static/js/runtime-main.6ac026be.js",
+    "static/js/2.73ecceb8.chunk.js",
     "static/css/main.6dea0f05.chunk.css",
-    "static/js/main.0e33ca55.chunk.js"
+    "static/js/main.8448be29.chunk.js"
   ]
 }
